@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+  <name>Multiple Image Selector</name>
+  <version>1.0</version>
+  <author>Emre Acar</author>
+  <code>multiple-image-selector</code>
+  <description>Allows you to select multiple images for your products at once.</description>
+  <link>https://emreacar.com.tr</link>
+  <file path="admin/language/*/common/filemanager.php">
+    <operation>
+      <search><![CDATA[
+      $_['error_delete']
+      ]]></search>
+
+      <add position="after"><![CDATA[
+      $_['button_add_all'] = "Add Selecteds";
+      ]]></add>
+    </operation>
+  </file>
+  <file path="admin/view/template/common/filemanager.twig">
+    <operation>
+      <search><![CDATA[
+      <div class="col-sm-5">
+      ]]></search>
+
+      <add position="replace"><![CDATA[
+      <div class="col-sm-6">
+      ]]></add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[
+      <div class="col-sm-7">
+      ]]></search>
+
+      <add position="replace"><![CDATA[
+      <div class="col-sm-6">
+      ]]></add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[
+      <button type="button" data-toggle="tooltip" title="{{ button_delete }}" id="button-delete" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+      ]]></search>
+
+      <add position="before"><![CDATA[
+      <button type="button" data-toggle="tooltip" title="{{ button_add_all }}" id="button-add-all" class="btn btn-success"><i class="fa fa-plus"></i></button>
+      ]]></add>
+    </operation>
+
+    <operation>
+      <search index="1"><![CDATA[
+      <input type="checkbox" name="path[]" value="{{ image.path }}" />
+      ]]></search>
+
+      <add position="replace"><![CDATA[
+      <input type="checkbox" name="path[]" value="{{ image.path }}" class="multiple-image-input" />
+      ]]></add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[
+      $('a.thumbnail').on('click', function(e) {
+      ]]></search>
+      <add position="before"><![CDATA[
+      var addSelected = function(Images) {
+        let totalSelected = Images.size;
+
+        var ImageInputs = $('body').find('input[id^="input-image"]').filter(function() {
+          return $(this).val() == "";
+        });
+
+        if (ImageInputs.length < totalSelected) {
+          let diff = totalSelected - ImageInputs.length;
+
+          for(let i = 0; i < diff; ++i) {
+            addImage();
+          }
+        }
+
+        var ImageInputs = $('body').find('input[id^="input-image"]').filter(function() {
+          return $(this).val() == "";
+        });
+
+        for(let i = 0; i < totalSelected; ++i) {
+          let source = Images.get(i);
+
+          $(ImageInputs[i]).parent().find('img').attr('src', source.thumb);
+          $(ImageInputs[i]).val(source.target);
+        }
+      }
+
+      $('button#button-add-all').on('click', function(e) {
+        e.preventDefault();
+        const selectedImages = $('.multiple-image-input:checked')
+
+        if( !selectedImages.length ) {
+          return;
+        }
+
+        const Images = new Map();
+
+        selectedImages.each(function(index) {
+          const el = $(this).parent().parent();
+
+          Images.set(index, {
+            thumb: el.find('img').attr('src'),
+            target: $(this).val()
+          })
+        })
+        addSelected(Images);
+        $('#modal-image').modal('hide');
+      });
+      ]]></add>
+    </operation>
+  </file>
+</modification>
